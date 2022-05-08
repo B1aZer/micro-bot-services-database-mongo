@@ -21,6 +21,7 @@ app.put('/profile', async (req, res) => {
   try {
     profileData = await profileModel.findOne({userID: userID})
     if (!profileData) {
+      console.log(`saving user ${userID}`);
       profileData = await profileModel.create({
           userID: userID,
           guildID: "958742337394208808",
