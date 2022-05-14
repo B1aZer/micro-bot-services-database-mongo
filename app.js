@@ -5,7 +5,7 @@ const express = require('express');
 const app = express();
 const port = 3011;
 
-const profileModel = require('./models/profile');
+const userModel = require('./models/user');
 
 // parse application/json, basically parse incoming Request Object as a JSON Object 
 app.use(express.json());
@@ -14,36 +14,36 @@ app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 
-
-app.put('/profile', async (req, res) => {
+app.put('/user', async (req, res) => {
   const userID = req.body.userID
-  let profileData;
+  if (!userID) {
+    return res.status(400).json({ 'status': 'provide userID' }); // *
+  }
+  let userData;
   try {
-    profileData = await profileModel.findOne({userID: userID})
-    if (!profileData) {
+    userData = await userModel.findOne({ userID: userID })
+    if (!userData) {
       console.log(`saving user ${userID}`);
-      profileData = await profileModel.create({
-          userID: userID,
-          guildID: "958742337394208808",
-          xp: 0,
-      })
+      const defaultUser = {
+        userID: userID,
+        guildID: process.env.guildId,
+      }
+      userData = await userModel.create(defaultUser)
     }
+    userData.tasks = [...userData.tasks, req.body.tasks];
+    await userData.save()
   } catch (err) {
     console.error(err);
   }
-  res.json(profileData)
+  res.json({ 'status': 'ok' })
 })
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
 
-
 mongoose
   .connect(process.env.MONGOOSE_SERVER)
   .then(() => {
     console.log("connected to db");
-    console.log("running ws on 8080");
   });
-
-
