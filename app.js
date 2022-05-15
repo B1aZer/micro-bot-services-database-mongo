@@ -14,6 +14,21 @@ app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 
+app.get('/user', async (req, res) => {
+  const userID = req.query.userID
+  if (!userID) {
+    return res.status(400).json({ 'status': 'provide userID' }); // *
+  }
+  let userData;
+  try {
+    userData = await userModel.findOne({ userID: userID })
+  } catch (err) {
+    console.error(err);
+    return res.status(404).json({ 'status': 'not found userID' }); // *
+  }
+  res.json(userData)
+})
+
 app.put('/user', async (req, res) => {
   const userID = req.body.userID
   if (!userID) {
@@ -30,7 +45,7 @@ app.put('/user', async (req, res) => {
       }
       userData = await userModel.create(defaultUser)
     }
-    userData.tasks = [...userData.tasks, req.body.tasks];
+    userData.tasks = [...userData.tasks, ...req.body.tasks];
     await userData.save()
   } catch (err) {
     console.error(err);
