@@ -45,7 +45,8 @@ app.put('/user', async (req, res) => {
       }
       userData = await userModel.create(defaultUser)
     }
-    Object.assign(userData, req.body)
+    userData.tasks = [...userData.tasks, ...req.body.tasks || []]
+    userData.coins = req.body.coins ? req.body.coins : userData.coins
     await userData.save()
   } catch (err) {
     console.error(err);
