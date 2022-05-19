@@ -34,8 +34,41 @@ app.put('/user', async (req, res) => {
   if (!userID) {
     return res.status(400).json({ 'status': 'provide userID' }); // *
   }
-  let userData;
   try {
+    const saveObject = {
+      userID: userID,
+      guildID: process.env.guildId,
+    }
+    if (req.body.coins) saveObject.coins = req.body.coins
+    // TODO: unused
+    const userData = await userModel.findOneAndUpdate(
+      { userID: userID },
+      saveObject,
+      {
+        new: true,
+        upsert: true
+      }
+    )
+    if (req.body.tasks?.length) {
+      for (let i = 0; i < req.body.tasks.length; i++) {
+        const task = req.body.tasks[i]
+        await userModel.findOneAndUpdate(
+          { userID: userID },
+          { $push: { tasks: task } },
+        )
+      }
+    }
+    if (req.body.txs?.length) {
+      for (let i = 0; i < req.body.txs.length; i++) {
+        const tx = req.body.txs[i]
+        await userModel.findOneAndUpdate(
+          { userID: userID },
+          { $push: { txs: tx } },
+        )
+      }
+    }
+
+    /*
     userData = await userModel.findOne({ userID: userID })
     if (!userData) {
       console.log(`saving user ${userID}`);
@@ -46,8 +79,10 @@ app.put('/user', async (req, res) => {
       userData = await userModel.create(defaultUser)
     }
     userData.tasks = [...userData.tasks, ...req.body.tasks || []]
+    userData.txs = [...userData.txs, ...req.body.txs || []]
     userData.coins = req.body.coins ? req.body.coins : userData.coins
     await userData.save()
+    */
   } catch (err) {
     console.error(err);
   }
