@@ -2,6 +2,7 @@ require('dotenv').config();
 var path = require('path');
 const mongoose = require('mongoose');
 const express = require('express');
+const cors = require('cors');
 const app = express();
 const port = 3011;
 
@@ -9,6 +10,10 @@ const userModel = require('./models/user');
 
 // parse application/json, basically parse incoming Request Object as a JSON Object 
 app.use(express.json());
+
+app.use(cors({
+  origin: '*'
+}));
 
 app.get('/', (req, res) => {
   res.send('Hello World!')
